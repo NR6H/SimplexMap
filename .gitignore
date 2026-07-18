@@ -1,0 +1,10 @@
+# SQLite database (runtime data — not committed)
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo

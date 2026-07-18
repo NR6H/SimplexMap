@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SimplexMap — Amateur Radio Net Tester</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════ SIDEBAR -->
+  <aside id="sidebar">
+
+    <div id="sidebar-header">
+      <div class="app-title">
+        <span class="app-icon">📡</span>
+        <div>
+          <h1>SimplexMap</h1>
+          <p class="subtitle">Amateur Radio Net Tester</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="my-station-bar">
+      <!-- Filled by JS: "You are: W1ABC [Leave]" or enroll prompt -->
+    </div>
+
+    <div id="join-bar">
+      <label for="join-select">Join as:</label>
+      <select id="join-select"><option value="">— select —</option></select>
+      <button id="btn-join">Go</button>
+    </div>
+
+    <div id="station-list-header">
+      <span id="station-count">Stations</span>
+    </div>
+
+    <div id="station-list">
+      <!-- Populated by JS -->
+    </div>
+
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════════ MAP -->
+  <div id="map"></div>
+
+  <!-- ═══════════════════════════════════════════════════ ENROLL PANEL -->
+  <div id="enroll-panel" class="panel hidden" role="dialog" aria-label="Enroll station">
+    <div class="panel-header">
+      <h2 id="enroll-title">Enroll My Station</h2>
+      <button class="panel-close" id="btn-cancel-enroll" title="Close">✕</button>
+    </div>
+
+    <form id="enroll-form" novalidate>
+
+      <div class="form-group">
+        <label for="f-callsign">Call Sign <span class="req">*</span></label>
+        <input id="f-callsign" type="text" placeholder="W1ABC" autocomplete="off" spellcheck="false"
+               maxlength="16" style="text-transform:uppercase">
+      </div>
+
+      <div class="form-group">
+        <label for="f-operator-name">Operator Name</label>
+        <input id="f-operator-name" type="text" placeholder="Jane Smith" autocomplete="off" maxlength="64">
+      </div>
+
+      <div class="form-group">
+        <label>Location <span class="req">*</span></label>
+        <p class="hint">Click on the map to place your pin, or drag it to adjust.</p>
+        <div id="f-location-display" class="location-display">Not set — click the map</div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="f-radio">Radio</label>
+          <input id="f-radio" type="text" placeholder="Kenwood TM-V71A">
+        </div>
+        <div class="form-group">
+          <label for="f-power">Power (W)</label>
+          <input id="f-power" type="number" min="0" max="1500" placeholder="50">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="f-antenna-type">Antenna</label>
+          <input id="f-antenna-type" type="text" placeholder="Yagi, Dipole, J-pole…">
+        </div>
+        <div class="form-group">
+          <label for="f-antenna-height">Height (ft AGL)</label>
+          <input id="f-antenna-height" type="number" min="0" step="0.5" placeholder="25">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="f-notes">Notes</label>
+        <textarea id="f-notes" rows="2" placeholder="Optional — terrain, obstructions, etc."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" id="btn-enroll-submit">Submit</button>
+        <button type="button" id="btn-cancel-enroll2">Cancel</button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ REPORT PANEL -->
+  <div id="report-panel" class="panel hidden" role="dialog" aria-label="Reception report">
+    <div class="panel-header">
+      <h2>Reception Report</h2>
+      <button class="panel-close" id="btn-cancel-report" title="Close">✕</button>
+    </div>
+
+    <p class="report-route">
+      <span class="rpt-label">From</span> <strong id="rpt-from"></strong>
+      <span class="rpt-arrow">→</span>
+      <span class="rpt-label">Hearing</span> <strong id="rpt-to"></strong>
+    </p>
+
+    <form id="report-form" novalidate>
+
+      <div class="form-group">
+        <label>Readability <span class="rs-hint">(1 = unreadable · 5 = perfectly readable)</span></label>
+        <div class="rs-buttons" id="rbt-readability"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Signal Strength <span class="rs-hint">(1 = barely perceptible · 9 = extremely strong)</span></label>
+        <div class="rs-buttons" id="rbt-signal"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="rpt-notes">Notes</label>
+        <textarea id="rpt-notes" rows="2" placeholder="Optional — QRM, fading, etc."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit">Submit Report</button>
+        <button type="button" id="btn-cancel-report2">Cancel</button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ TOAST -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Legend (always visible bottom-left of map) -->
+  <div id="legend">
+    <div class="legend-title">Signal Lines</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#22bb22"></span> S8–S9 Strong</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#aacc00"></span> S6–S7 Good</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#ff8800"></span> S4–S5 Fair</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#cc2200"></span> S1–S3 Weak</div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
