@@ -4,6 +4,12 @@ A real-time, multi-user web app for amateur radio operators to coordinate and lo
 
 Operators enroll their station on an interactive map, then submit RS reception reports for stations they can hear. Signal quality lines animate between stations to show propagation in each direction.
 
+## Rationale
+
+North Hills Radio Club (K6IS.org) in Sacramento runs a weekly "simplex net". This application is intended to help participating stations track who they can hear, and who can hear them. It's a real-time map-view, and is intended to be hosted on a public server. 
+
+Stations add themselves to the app. No credentials are required, and the registrations will automatically be deleted after 20 hours.
+
 ## Features
 
 - **Live map** — drop-pin markers for each enrolled station; lines appear between stations that have exchanged reports
@@ -91,3 +97,5 @@ SimplexMap/
 ## License
 
 MIT
+
+Very few brain cells were harmed in the creation of this app. Claude did all the work.
